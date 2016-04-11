@@ -6,7 +6,9 @@ import java.util.Set;
 
 public class SetSample {
     public static void main(String[] args) {
-        Jedis redis = new Jedis("localhost");
+
+        String redisHost = System.getenv("REDIS_HOST");
+        Jedis redis = new Jedis(redisHost);
 
         Set<String> keys = redis.keys("user.by.id.*");
         for (String key : keys) {
@@ -19,7 +21,6 @@ public class SetSample {
             redis.sadd("user.ids", userid);
         }
 
-
         //What is the cardinality of the user id set?
         //REDIS SCARD
         System.out.println(String.format(
@@ -29,6 +30,5 @@ public class SetSample {
         //Get members of the set
         //REDIS SMEMBERS
         System.out.println(redis.smembers("user.ids"));
-
     }
 }

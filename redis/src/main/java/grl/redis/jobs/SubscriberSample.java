@@ -6,53 +6,54 @@ import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.JedisPubSub;
 
 public class SubscriberSample {
+
     public static void main(String[] args) {
-        final JedisPool redisPool = new JedisPool(new JedisPoolConfig(), "localhost");
-        Thread subscriberThread = new Thread(new Runnable() {
-            public void run() {
-                Jedis subscriberRedis = redisPool.getResource();
-                subscriberRedis.subscribe(new JedisPubSub() {
+        String redisHost = System.getenv("REDIS_HOST");
 
-                    @Override
-                    public void onMessage(String channel, String message) {
-                        Jedis redis = redisPool.getResource();
-                        String pendingJobId = message;
-                        String pendingJobData = redis.get("job.by.id." + pendingJobId);
-                        if (pendingJobData != null) {
-                            System.out.println(String.format(
-                                    "Processing job %s: data: %s",
-                                    pendingJobId,
-                                    pendingJobData
-                            ));
-                            /*
-                             * Do something...
-							 */
-                        }
-                        redisPool.returnResource(redis);
+        final JedisPool redisPool = new JedisPool(new JedisPoolConfig(), redisHost);
+        Thread subscriberThread = new Thread(() -> {
+            Jedis subscriberRedis = redisPool.getResource();
+            subscriberRedis.subscribe(new JedisPubSub() {
+
+                @Override
+                public void onMessage(String channel, String message) {
+                    Jedis redis = redisPool.getResource();
+                    String pendingJobId = message;
+                    String pendingJobData = redis.get("job.by.id." + pendingJobId);
+                    if (pendingJobData != null) {
+                        System.out.println(String.format(
+                                "Processing job %s: data: %s",
+                                pendingJobId,
+                                pendingJobData
+                        ));
+                        /*
+                         * Do something...
+                         */
                     }
+                    redisPool.returnResource(redis);
+                }
 
-                    @Override
-                    public void onPMessage(String pattern, String channel, String message) {
-                    }
+                @Override
+                public void onPMessage(String pattern, String channel, String message) {
+                }
 
-                    @Override
-                    public void onSubscribe(String channel, int subscribedChannels) {
-                    }
+                @Override
+                public void onSubscribe(String channel, int subscribedChannels) {
+                }
 
-                    @Override
-                    public void onUnsubscribe(String channel, int subscribedChannels) {
-                    }
+                @Override
+                public void onUnsubscribe(String channel, int subscribedChannels) {
+                }
 
-                    @Override
-                    public void onPUnsubscribe(String pattern, int subscribedChannels) {
-                    }
+                @Override
+                public void onPUnsubscribe(String pattern, int subscribedChannels) {
+                }
 
-                    @Override
-                    public void onPSubscribe(String pattern, int subscribedChannels) {
-                    }
+                @Override
+                public void onPSubscribe(String pattern, int subscribedChannels) {
+                }
 
-                }, "jobs.channel");
-            }
+            }, "jobs.channel");
         });
 
         subscriberThread.start();
@@ -73,6 +74,5 @@ public class SubscriberSample {
             publisherRedis.publish("jobs.channel", jobid + "");
         }
     }
-
 
 }

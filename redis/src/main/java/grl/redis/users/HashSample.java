@@ -7,9 +7,11 @@ import java.util.Map;
 
 public class HashSample {
     public static void main(String[] args) {
-        Jedis redis = new Jedis("localhost");
+        String redisHost = System.getenv("REDIS_HOST");
 
-        Map<String, String> map = new HashMap<String, String>();
+        Jedis redis = new Jedis(redisHost);
+
+        Map<String, String> map = new HashMap<>();
         map.put("email", "user1@domain.com");
         map.put("userid", "12356");
         map.put("address", "1111 Main St. Houston TX, 77054");
@@ -20,7 +22,7 @@ public class HashSample {
         redis.hmset("user.by.id." + map.get("userid"), map);
 
         //Index this user by their email
-        redis.set("user.id.by.email.", map.get("email"));
+        redis.set("user.id.by.email."+map.get("email"), map.get("userid"));
 
         System.out.println("User stored: " + map.get("userid"));
 
@@ -30,7 +32,7 @@ public class HashSample {
                 redis.hgetAll("user.by.id." + map.get("userid"))
         );
 
-        map = new HashMap<String, String>();
+        map = new HashMap<>();
         map.put("email", "user2@other.domain.com");
         map.put("userid", "24567");
         map.put("address", "1111 Main St. Houston TX, 77054");
@@ -50,7 +52,6 @@ public class HashSample {
         System.out.println(
                 redis.hgetAll("user.by.id." + map.get("userid"))
         );
-
 
         //Get user by email using String key
         String email = "user1@domain.com";

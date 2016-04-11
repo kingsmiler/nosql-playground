@@ -61,9 +61,9 @@ public class RedisClient {
         keyOperate();
         stringOperate();
         listOperate();
-        SetOperate();
-        SortedSetOperate();
-        HashOperate();
+        setOperate();
+        sortedSetOperate();
+        hashOperate();
 
         //旧版本释放资源方法，从Jedis 3.x开始将不提供
         jedisPool.returnResource(jedis);
@@ -91,7 +91,8 @@ public class RedisClient {
         jedis.keys("*").forEach(System.out::println);
 
         // 删除某个key,若key不存在，则忽略该命令。
-        System.out.println("系统中删除key002: " + jedis.del("key002"));
+//        System.out.println("系统中删除key002: " + jedis.del("key002"));
+        System.out.println("系统中删除key002: " + sharedJedis.del("key002"));
         System.out.println("判断key002是否存在：" + sharedJedis.exists("key002"));
         // 设置 key001的过期时间
         System.out.println("设置 key001的过期时间为5秒:" + jedis.expire("key001", 5));
@@ -233,6 +234,7 @@ public class RedisClient {
         // 数组长度
         System.out.println("长度-stringlists：" + sharedJedis.llen("stringlists"));
         System.out.println("长度-numberlists：" + sharedJedis.llen("numberlists"));
+
         // 排序
         /*
          * list中存字符串时必须指定参数为alpha，如果不使用SortingParams，而是直接使用sort("list")，
@@ -249,7 +251,7 @@ public class RedisClient {
         System.out.println("获取下标为2的元素：" + sharedJedis.lindex("stringlists", 2) + "\n");
     }
 
-    private void SetOperate() {
+    public void setOperate() {
         System.out.println("======================set==========================");
         // 清空数据
         System.out.println("清空库中所有数据：" + jedis.flushDB());
@@ -260,18 +262,18 @@ public class RedisClient {
         System.out.println("向sets集合中加入元素element003：" + jedis.sadd("sets", "element003"));
         System.out.println("向sets集合中加入元素element004：" + jedis.sadd("sets", "element004"));
         System.out.println("查看sets集合中的所有元素:" + jedis.smembers("sets"));
-        System.out.println();
 
+        System.out.println();
         System.out.println("=============删=============");
         System.out.println("集合sets中删除元素element003：" + jedis.srem("sets", "element003"));
         System.out.println("查看sets集合中的所有元素:" + jedis.smembers("sets"));
         /*System.out.println("sets集合中任意位置的元素出栈："+jedis.spop("sets"));//注：出栈元素位置居然不定？--无实际意义
         System.out.println("查看sets集合中的所有元素:"+jedis.smembers("sets"));*/
-        System.out.println();
 
+        System.out.println();
         System.out.println("=============改=============");
-        System.out.println();
 
+        System.out.println();
         System.out.println("=============查=============");
         System.out.println("判断element001是否在集合sets中：" + jedis.sismember("sets", "element001"));
         System.out.println("循环查询获取sets中的每个元素：");
@@ -279,7 +281,6 @@ public class RedisClient {
         jedis.smembers("sets").forEach(System.out::println);
 
         System.out.println();
-
         System.out.println("=============集合运算=============");
         System.out.println("sets1中添加元素element001：" + jedis.sadd("sets1", "element001"));
         System.out.println("sets1中添加元素element002：" + jedis.sadd("sets1", "element002"));
@@ -294,7 +295,7 @@ public class RedisClient {
         System.out.println("sets1和sets2差集：" + jedis.sdiff("sets1", "sets2"));//差集：set1中有，set2中没有的元素
     }
 
-    private void SortedSetOperate() {
+    public void sortedSetOperate() {
         System.out.println("======================zset==========================");
         // 清空数据
         System.out.println(jedis.flushDB());
@@ -305,13 +306,13 @@ public class RedisClient {
         System.out.println("zset中添加元素element003：" + sharedJedis.zadd("zset", 2.0, "element003"));
         System.out.println("zset中添加元素element004：" + sharedJedis.zadd("zset", 3.0, "element004"));
         System.out.println("zset集合中的所有元素：" + sharedJedis.zrange("zset", 0, -1));//按照权重值排序
-        System.out.println();
 
+        System.out.println();
         System.out.println("=============删=============");
         System.out.println("zset中删除元素element002：" + sharedJedis.zrem("zset", "element002"));
         System.out.println("zset集合中的所有元素：" + sharedJedis.zrange("zset", 0, -1));
-        System.out.println();
 
+        System.out.println();
         System.out.println("=============改=============");
         System.out.println();
 
@@ -323,7 +324,7 @@ public class RedisClient {
 
     }
 
-    private void HashOperate() {
+    public void hashOperate() {
         System.out.println("======================hash==========================");
         //清空数据
         System.out.println(jedis.flushDB());

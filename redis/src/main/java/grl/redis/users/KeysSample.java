@@ -8,13 +8,14 @@ import java.util.Set;
 
 public class KeysSample {
     public static void main(String[] args) {
-        HashMap<String, String> users = new HashMap<String, String>();
+        HashMap<String, String> users = new HashMap<>();
 
         users.put("12356", "user1@domain.com");
         users.put("24567", "user2@other.domain.com");
         users.put("56123", "user3@domain.com");
 
-        Jedis redis = new Jedis("localhost");
+        String redisHost = System.getenv("REDIS_HOST");
+        Jedis redis = new Jedis(redisHost);
 
         for (Entry<String, String> entry : users.entrySet()) {
             String userid = entry.getKey();

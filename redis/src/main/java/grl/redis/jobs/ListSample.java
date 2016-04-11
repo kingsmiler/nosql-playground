@@ -3,8 +3,11 @@ package grl.redis.jobs;
 import redis.clients.jedis.Jedis;
 
 public class ListSample {
+
     public static void main(String[] args) {
-        Jedis redis = new Jedis("localhost");
+        String redisHost = System.getenv("REDIS_HOST");
+
+        Jedis redis = new Jedis(redisHost);
 
         redis.set("job.counter", "0");
 
@@ -26,10 +29,9 @@ public class ListSample {
 
         //Get number of jobs to process
         //REDIS LLEN
-        System.out.println(String.format(
-                "Jobs to be processed %d",
-                redis.llen("jobs.queue")
-        ));
+        System.out.println(
+                String.format("Jobs to be processed %d", redis.llen("jobs.queue")
+                ));
 
         //Process all pending jobs in the queue
         //REDIS RPOP
@@ -37,14 +39,12 @@ public class ListSample {
         while ((pendingJobId = redis.rpop("jobs.queue")) != null) {
             String pendingJobData = redis.get("job.by.id." + pendingJobId);
             if (pendingJobData != null) {
-                System.out.println(String.format(
-                        "Processing job %s: data: %s",
-                        pendingJobId,
-                        pendingJobData
-                ));
-                /*
-                 * Do something...
-				 */
+                System.out.println(
+                        String.format(
+                                "Processing job %s: data: %s",
+                                pendingJobId,
+                                pendingJobData
+                        ));
             }
         }
     }

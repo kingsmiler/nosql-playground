@@ -21,4 +21,29 @@ public class RedisClientTest {
         RedisClient client = new RedisClient();
         client.stringOperate();
     }
+
+    @Test
+    public void testListOperate() {
+        RedisClient client = new RedisClient();
+        client.listOperate();
+    }
+
+    @Test
+    public void testSetOperate() {
+        RedisClient client = new RedisClient();
+        client.setOperate();
+    }
+
+    @Test
+    public void testSortedSetOperate() {
+        RedisClient client = new RedisClient();
+        client.sortedSetOperate();
+    }
+
+    @Test
+    public void testHashOperate() {
+        RedisClient client = new RedisClient();
+        client.hashOperate();
+    }
+
 }

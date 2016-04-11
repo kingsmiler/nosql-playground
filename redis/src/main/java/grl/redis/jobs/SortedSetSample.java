@@ -6,7 +6,8 @@ import java.util.Set;
 
 public class SortedSetSample {
     public static void main(String[] args) {
-        Jedis redis = new Jedis("localhost");
+        String redisHost = System.getenv("REDIS_HOST");
+        Jedis redis = new Jedis(redisHost);
 
         redis.set("job.counter", "0");
 

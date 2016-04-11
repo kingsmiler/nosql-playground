@@ -4,7 +4,9 @@ import redis.clients.jedis.Jedis;
 
 public class ScriptSample {
     public static void main(String[] args) throws InterruptedException {
-        Jedis redis = new Jedis("localhost");
+        String redisHost = System.getenv("REDIS_HOST");
+
+        Jedis redis = new Jedis(redisHost);
 
         String userid = "12356";
         //Expires in 1 second
