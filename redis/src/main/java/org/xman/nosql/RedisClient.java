@@ -60,7 +60,7 @@ public class RedisClient {
     public void show() {
         keyOperate();
         stringOperate();
-        ListOperate();
+        listOperate();
         SetOperate();
         SortedSetOperate();
         HashOperate();
@@ -189,7 +189,7 @@ public class RedisClient {
         System.out.println("获取key302对应值中的子串：" + sharedJedis.getrange("key302", 5, 7));
     }
 
-    private void ListOperate() {
+    public void listOperate() {
         System.out.println("======================list==========================");
         // 清空数据
         System.out.println("清空库中所有数据：" + jedis.flushDB());
@@ -210,6 +210,7 @@ public class RedisClient {
         System.out.println("所有元素-stringlists：" + sharedJedis.lrange("stringlists", 0, -1));
         System.out.println("所有元素-numberlists：" + sharedJedis.lrange("numberlists", 0, -1));
 
+        System.out.println();
         System.out.println("=============删=============");
         // 删除列表指定的值 ，第二个参数为删除的个数（有重复时），后add进去的值先被删，类似于出栈
         System.out.println("成功删除指定元素个数-stringlists：" + sharedJedis.lrem("stringlists", 2, "vector"));
@@ -221,10 +222,13 @@ public class RedisClient {
         System.out.println("出栈元素：" + sharedJedis.lpop("stringlists"));
         System.out.println("元素出栈后-stringlists：" + sharedJedis.lrange("stringlists", 0, -1));
 
+        System.out.println();
         System.out.println("=============改=============");
         // 修改列表中指定下标的值
         sharedJedis.lset("stringlists", 0, "hello list!");
         System.out.println("下标为0的值修改后-stringlists：" + sharedJedis.lrange("stringlists", 0, -1));
+
+        System.out.println();
         System.out.println("=============查=============");
         // 数组长度
         System.out.println("长度-stringlists：" + sharedJedis.llen("stringlists"));
