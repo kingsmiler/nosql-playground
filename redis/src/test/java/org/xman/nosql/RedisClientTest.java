@@ -13,6 +13,12 @@ public class RedisClientTest {
     @Test
     public void testKeyOperate() {
         RedisClient client = new RedisClient();
-        client.KeyOperate();
+        client.keyOperate();
+    }
+
+    @Test
+    public void testStringOperate() {
+        RedisClient client = new RedisClient();
+        client.stringOperate();
     }
 }

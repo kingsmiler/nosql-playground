@@ -3,16 +3,14 @@ package org.xman.nosql;
 import redis.clients.jedis.*;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 
 public class RedisClient {
 
-    private Jedis jedis;//非切片额客户端连接
+    private Jedis jedis;//非切片池连接客户端
     private JedisPool jedisPool;//非切片连接池
-    private ShardedJedis sharedJedis;//切片额客户端连接
+    private ShardedJedis sharedJedis;//切片池连接客户端
     private ShardedJedisPool shardedJedisPool;//切片连接池
 
     private String redisHost;
@@ -60,28 +58,36 @@ public class RedisClient {
     }
 
     public void show() {
-        KeyOperate();
-        StringOperate();
+        keyOperate();
+        stringOperate();
         ListOperate();
         SetOperate();
         SortedSetOperate();
         HashOperate();
+
+        //旧版本释放资源方法，从Jedis 3.x开始将不提供
         jedisPool.returnResource(jedis);
+        // 新的关闭方式
+        jedis.close();
+
+        //旧版本释放资源方法，从Jedis 3.x开始将不提供
         shardedJedisPool.returnResource(sharedJedis);
+        sharedJedis.close();
     }
 
-    public void KeyOperate() {
+    public void keyOperate() {
         System.out.println("======================key==========================");
         // 清空数据
         System.out.println("清空库中所有数据：" + jedis.flushDB());
+
         // 判断key否存在
         System.out.println("判断key999键是否存在：" + sharedJedis.exists("key999"));
         System.out.println("新增key001,value001键值对：" + sharedJedis.set("key001", "value001"));
         System.out.println("判断key001是否存在：" + sharedJedis.exists("key001"));
-        // 输出系统中所有的key
         System.out.println("新增key002,value002键值对：" + sharedJedis.set("key002", "value002"));
-        System.out.println("系统中所有键如下：");
 
+        // 输出系统中所有的key
+        System.out.println("系统中所有键如下：");
         jedis.keys("*").forEach(System.out::println);
 
         // 删除某个key,若key不存在，则忽略该命令。
@@ -99,14 +105,16 @@ public class RedisClient {
         System.out.println("查看key001的剩余生存时间：" + jedis.ttl("key001"));
         // 查看key所储存的值的类型
         System.out.println("查看key所储存的值的类型：" + jedis.type("key001"));
+
         /*
-         * 一些其他方法：1、修改键名：jedis.rename("key6", "key0");
-         *             2、将当前db的key移动到给定的db当中：jedis.move("foo", 1)
+         * 一些其他方法：
+         * 1、修改键名：jedis.rename("key6", "key0");
+         * 2、将当前db的key移动到给定的db当中：jedis.move("foo", 1)
          */
     }
 
 
-    private void StringOperate() {
+    public void stringOperate() {
         System.out.println("======================String_1==========================");
         // 清空数据
         System.out.println("清空库中所有数据：" + jedis.flushDB());
@@ -120,10 +128,12 @@ public class RedisClient {
         System.out.println(jedis.get("key002"));
         System.out.println(jedis.get("key003"));
 
+        System.out.println();
         System.out.println("=============删=============");
         System.out.println("删除key003键值对：" + jedis.del("key003"));
         System.out.println("获取key003键对应的值：" + jedis.get("key003"));
 
+        System.out.println();
         System.out.println("=============改=============");
         //1、直接覆盖原来的数据
         System.out.println("直接覆盖key001原来的数据：" + jedis.set("key001", "value001-update"));
@@ -132,6 +142,7 @@ public class RedisClient {
         System.out.println("在key002原来值后面追加：" + jedis.append("key002", "+appendString"));
         System.out.println("获取key002对应的新值" + jedis.get("key002"));
 
+        System.out.println();
         System.out.println("=============增，删，查（多个）=============");
         /**
          * mset,mget同时新增，修改，查询多个键值对
@@ -139,17 +150,17 @@ public class RedisClient {
          * jedis.set("name","ssss");
          * jedis.set("jarorwar","xxxx");
          */
-        System.out.println("一次性新增key201,key202,key203,key204及其对应值：" + jedis.mset("key201", "value201",
-                "key202", "value202", "key203", "value203", "key204", "value204"));
+        System.out.println("一次性新增key201,key202,key203,key204及其对应值：" +
+                jedis.mset("key201", "value201","key202", "value202", "key203", "value203", "key204", "value204"));
         System.out.println("一次性获取key201,key202,key203,key204各自对应的值：" +
                 jedis.mget("key201", "key202", "key203", "key204"));
         System.out.println("一次性删除key201,key202：" + jedis.del("key201", "key202"));
         System.out.println("一次性获取key201,key202,key203,key204各自对应的值：" +
                 jedis.mget("key201", "key202", "key203", "key204"));
+
+
         System.out.println();
-
-
-        //jedis具备的功能shardedJedis中也可直接使用，下面测试一些前面没用过的方法
+        //jedis具备的功能sharedJedis中也可直接使用，下面测试一些前面没用过的方法
         System.out.println("======================String_2==========================");
         // 清空数据
         System.out.println("清空库中所有数据：" + jedis.flushDB());
