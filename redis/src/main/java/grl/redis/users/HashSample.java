@@ -7,6 +7,7 @@ import java.util.Map;
 
 public class HashSample {
     public static void main(String[] args) {
+        // 从环境变量中获取主机信息
         String redisHost = System.getenv("REDIS_HOST");
 
         Jedis redis = new Jedis(redisHost);
