@@ -14,6 +14,8 @@ public class RedisClientTest {
     public void testKeyOperate() {
         RedisClient client = new RedisClient();
         client.keyOperate();
+
+        client.close();
     }
 
     @Test

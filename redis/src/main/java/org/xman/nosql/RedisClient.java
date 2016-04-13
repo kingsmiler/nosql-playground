@@ -9,20 +9,11 @@ import java.util.List;
 public class RedisClient {
 
     private Jedis jedis;//非切片池连接客户端
-    private JedisPool jedisPool;//非切片连接池
     private ShardedJedis sharedJedis;//切片池连接客户端
-    private ShardedJedisPool shardedJedisPool;//切片连接池
-
-    private String redisHost;
 
     public RedisClient() {
-
-        redisHost = System.getenv("REDIS_HOST");
-
-        initialPool();
-        initialSharedPool();
-        sharedJedis = shardedJedisPool.getResource();
-        jedis = jedisPool.getResource();
+        sharedJedis = RedisUtil.getShardedRedisClient();
+        jedis = RedisUtil.getRedisClient();
     }
 
     private static void sleep(long millis) {
@@ -33,53 +24,8 @@ public class RedisClient {
         }
     }
 
-    /**
-     * 初始化非切片池
-     */
-    public void initialPool() {
-        // 池基本配置
-        JedisPoolConfig config = new JedisPoolConfig();
-        config.setMaxTotal(20);
-        config.setMaxIdle(5);
-        config.setMaxWaitMillis(1000L);
-        config.setTestOnBorrow(false);
-
-        jedisPool = new JedisPool(config, redisHost, 6379);
-    }
-
-    /**
-     * 初始化切片池
-     */
-    public void initialSharedPool() {
-        // 池基本配置
-        JedisPoolConfig config = new JedisPoolConfig();
-        config.setMaxTotal(20);
-        config.setMaxIdle(5);
-        config.setMaxWaitMillis(1000L);
-        config.setTestOnBorrow(false);
-        // slave链接
-        List<JedisShardInfo> shards = new ArrayList<>();
-        shards.add(new JedisShardInfo(redisHost, 6379, "master"));
-
-        // 构造池
-        shardedJedisPool = new ShardedJedisPool(config, shards);
-    }
-
-    public void show() {
-        keyOperate();
-        stringOperate();
-        listOperate();
-        setOperate();
-        sortedSetOperate();
-        hashOperate();
-
-        //旧版本释放资源方法，从Jedis 3.x开始将不提供
-        jedisPool.returnResource(jedis);
-        // 新的关闭方式
+    public void close() {
         jedis.close();
-
-        //旧版本释放资源方法，从Jedis 3.x开始将不提供
-        shardedJedisPool.returnResource(sharedJedis);
         sharedJedis.close();
     }
 

@@ -1,5 +1,6 @@
 package redisinaction;
 
+import org.xman.nosql.RedisUtil;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.ZParams;
 
@@ -15,11 +16,14 @@ public class Chapter01 {
     }
 
     public void run() {
-        Jedis conn = new Jedis("localhost");
+        Jedis conn = RedisUtil.getRedisClient();
         conn.select(15);
 
-        String articleId = postArticle(
-                conn, "username", "A title", "http://www.google.com");
+        String articleId = postArticle(conn,
+                "username",
+                "A title",
+                "http://www.google.com");
+
         System.out.println("We posted a new article with id: " + articleId);
         System.out.println("Its HASH looks like:");
         Map<String, String> articleData = conn.hgetAll("article:" + articleId);
