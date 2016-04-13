@@ -25,6 +25,14 @@ public class RedisClient {
         jedis = jedisPool.getResource();
     }
 
+    private static void sleep(long millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
     /**
      * 初始化非切片池
      */
@@ -114,7 +122,6 @@ public class RedisClient {
          */
     }
 
-
     public void stringOperate() {
         System.out.println("======================String_1==========================");
         // 清空数据
@@ -152,7 +159,7 @@ public class RedisClient {
          * jedis.set("jarorwar","xxxx");
          */
         System.out.println("一次性新增key201,key202,key203,key204及其对应值：" +
-                jedis.mset("key201", "value201","key202", "value202", "key203", "value203", "key204", "value204"));
+                jedis.mset("key201", "value201", "key202", "value202", "key203", "value203", "key204", "value204"));
         System.out.println("一次性获取key201,key202,key203,key204各自对应的值：" +
                 jedis.mget("key201", "key202", "key203", "key204"));
         System.out.println("一次性删除key201,key202：" + jedis.del("key201", "key202"));
@@ -354,13 +361,5 @@ public class RedisClient {
         System.out.println("获取hashs中所有的key：" + sharedJedis.hkeys("hashs"));
         System.out.println("获取hashs中所有的value：" + sharedJedis.hvals("hashs"));
         System.out.println();
-    }
-
-    private static void sleep(long millis) {
-        try {
-            Thread.sleep(millis);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
     }
 }
