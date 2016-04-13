@@ -18,43 +18,36 @@ public class HashSample {
         map.put("address", "1111 Main St. Houston TX, 77054");
         map.put("phone", "555-124-5544");
 
-        //Store all values in the map
-        //REDIS HMSET
+        // 将所有数据保存在 map 中，然后使用 hmset 方法一次插入对象数据
         redis.hmset("user.by.id." + map.get("userid"), map);
 
-        //Index this user by their email
-        redis.set("user.id.by.email."+map.get("email"), map.get("userid"));
+        // 以邮件地址作为索引，保存 ID 信息
+        redis.set("user.id.by.email." + map.get("email"), map.get("userid"));
 
         System.out.println("User stored: " + map.get("userid"));
 
-        //Confirm that all values are set
-        //REDIS HGETALL
+        // 使用 hgetall 方法检查是否数据插入成功
         System.out.println(
                 redis.hgetAll("user.by.id." + map.get("userid"))
         );
 
+        // 第二个对象
         map = new HashMap<>();
         map.put("email", "user2@other.domain.com");
         map.put("userid", "24567");
         map.put("address", "1111 Main St. Houston TX, 77054");
         map.put("phone", "555-124-5544");
 
-        //Store all values in the map
-        //REDIS HMSET
         redis.hmset("user.by.id." + map.get("userid"), map);
-
-        //Index this user by their email
         redis.set("user.id.by.email.", map.get("email"));
 
         System.out.println("User stored: " + map.get("userid"));
 
-        //Confirm that all values are set
-        //REDIS HGETALL
         System.out.println(
                 redis.hgetAll("user.by.id." + map.get("userid"))
         );
 
-        //Get user by email using String key
+        // 通过索引得到用户 ID， 再根据 ID 来进行查询。
         String email = "user1@domain.com";
         String userid = redis.get("user.id.by.email." + email);
         if (userid != null) {
