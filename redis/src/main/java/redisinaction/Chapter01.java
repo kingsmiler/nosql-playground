@@ -16,88 +16,143 @@ public class Chapter01 {
     }
 
     public void run() {
-        Jedis conn = RedisUtil.getRedisClient();
-        conn.select(15);
+        Jedis jedis = RedisUtil.getRedisClient();
+        jedis.select(15);
+        jedis.flushDB();
 
-        String articleId = postArticle(conn,
+        String articleId = postArticle(jedis,
                 "username",
                 "A title",
                 "http://www.google.com");
 
         System.out.println("We posted a new article with id: " + articleId);
         System.out.println("Its HASH looks like:");
-        Map<String, String> articleData = conn.hgetAll("article:" + articleId);
+        Map<String, String> articleData = jedis.hgetAll("article:" + articleId);
         for (Map.Entry<String, String> entry : articleData.entrySet()) {
             System.out.println("  " + entry.getKey() + ": " + entry.getValue());
         }
 
         System.out.println();
 
-        articleVote(conn, "other_user", "article:" + articleId);
-        String votes = conn.hget("article:" + articleId, "votes");
+        articleVote(jedis, "other_user", "article:" + articleId);
+        String votes = jedis.hget("article:" + articleId, "votes");
         System.out.println("We voted for the article, it now has votes: " + votes);
         assert Integer.parseInt(votes) > 1;
 
         System.out.println("The currently highest-scoring articles are:");
-        List<Map<String, String>> articles = getArticles(conn, 1);
+        List<Map<String, String>> articles = getArticles(jedis, 1);
         printArticles(articles);
         assert articles.size() >= 1;
 
-        addGroups(conn, articleId, new String[]{"new-group"});
+        addGroups(jedis, articleId, new String[]{"new-group"});
         System.out.println("We added the article to a new group, other articles include:");
-        articles = getGroupArticles(conn, "new-group", 1);
+        articles = getGroupArticles(jedis, "new-group", 1);
         printArticles(articles);
         assert articles.size() >= 1;
     }
 
-    public String postArticle(Jedis conn, String user, String title, String link) {
-        String articleId = String.valueOf(conn.incr("article:"));
+    /**
+     * 发表文章。
+     *
+     * @param jedis 客户端连接
+     * @param user  发表的用户
+     * @param title 发表的标题
+     * @param link  文章的链接
+     * @return 文章的ID
+     */
+    public String postArticle(Jedis jedis, String user, String title, String link) {
+        // 生成一个新的文章ID。
+        String articleId = String.valueOf(jedis.incr("article:"));
 
         String voted = "voted:" + articleId;
-        conn.sadd(voted, user);
-        conn.expire(voted, ONE_WEEK_IN_SECONDS);
+
+        // 将发布文章的用户添加到文章的已投票用户名单里面，
+        // 然后将这个名单的过期时间设置为一周。
+        jedis.sadd(voted, user);
+        jedis.expire(voted, ONE_WEEK_IN_SECONDS);
 
         long now = System.currentTimeMillis() / 1000;
         String article = "article:" + articleId;
-        HashMap<String, String> articleData = new HashMap<String, String>();
+
+        // 将文章信息存储到一个散列里面。
+        HashMap<String, String> articleData = new HashMap<>();
         articleData.put("title", title);
         articleData.put("link", link);
         articleData.put("user", user);
         articleData.put("now", String.valueOf(now));
         articleData.put("votes", "1");
-        conn.hmset(article, articleData);
-        conn.zadd("score:", now + VOTE_SCORE, article);
-        conn.zadd("time:", now, article);
+        jedis.hmset(article, articleData);
+
+        // 将文章添加到根据发布时间排序的有序集合和根据评分排序的有序集合里面。
+        jedis.zadd("score:", now + VOTE_SCORE, article);
+        jedis.zadd("time:", now, article);
 
         return articleId;
     }
 
-    public void articleVote(Jedis conn, String user, String article) {
+    /**
+     * 给文章投票。
+     *
+     * @param jedis   客户端
+     * @param user    用户名
+     * @param article 要投票的文章，组成格式为"article:id"
+     */
+    public void articleVote(Jedis jedis, String user, String article) {
+        // 计算文章的投票截止时间。
         long cutoff = (System.currentTimeMillis() / 1000) - ONE_WEEK_IN_SECONDS;
-        if (conn.zscore("time:", article) < cutoff) {
+
+        // 检查是否还可以对文章进行投票
+        //（虽然使用散列也可以获取文章的发布时间，
+        // 但有序集合返回的文章发布时间为浮点数，
+        // 可以不进行转换直接使用）。
+        if (jedis.zscore("time:", article) < cutoff) {
             return;
         }
 
+        // 从article:id标识符（identifier）里面取出文章的ID。
         String articleId = article.substring(article.indexOf(':') + 1);
-        if (conn.sadd("voted:" + articleId, user) == 1) {
-            conn.zincrby("score:", VOTE_SCORE, article);
-            conn.hincrBy(article, "votes", 1l);
+
+        // 如果用户是第一次为这篇文章投票，那么增加这篇文章的投票数量和评分。
+        // 从技术上来讲，要正确地实现投票功能，
+        // 要将下面的SADD、ZINCRBY和HINCRBY三个命令放到一个事务里面执行。
+        if (jedis.sadd("voted:" + articleId, user) == 1) {
+            jedis.zincrby("score:", VOTE_SCORE, article);
+            jedis.hincrBy(article, "votes", 1L);
         }
     }
 
 
-    public List<Map<String, String>> getArticles(Jedis conn, int page) {
-        return getArticles(conn, page, "score:");
+    /**
+     * 获取根据分数排名的文章列表。
+     *
+     * @param jedis 客户端
+     * @param page  第几页
+     * @return 文章列表
+     */
+    public List<Map<String, String>> getArticles(Jedis jedis, int page) {
+        return getArticles(jedis, page, "score:");
     }
 
-    public List<Map<String, String>> getArticles(Jedis conn, int page, String order) {
+    /**
+     * 获取根据某属性排序后的文章列表。
+     *
+     * @param jedis 客户端
+     * @param page  第几页
+     * @param order 排序属性
+     * @return 文章列表
+     */
+    public List<Map<String, String>> getArticles(Jedis jedis, int page, String order) {
+        // 设置获取文章的起始索引和结束索引。
         int start = (page - 1) * ARTICLES_PER_PAGE;
         int end = start + ARTICLES_PER_PAGE - 1;
 
-        Set<String> ids = conn.zrevrange(order, start, end);
-        List<Map<String, String>> articles = new ArrayList<Map<String, String>>();
+        // 获取多个文章ID。
+        Set<String> ids = jedis.zrevrange(order, start, end);
+
+        // 根据文章ID获取文章的详细信息。
+        List<Map<String, String>> articles = new ArrayList<>();
         for (String id : ids) {
-            Map<String, String> articleData = conn.hgetAll(id);
+            Map<String, String> articleData = jedis.hgetAll(id);
             articleData.put("id", id);
             articles.add(articleData);
         }
@@ -105,25 +160,58 @@ public class Chapter01 {
         return articles;
     }
 
-    public void addGroups(Jedis conn, String articleId, String[] toAdd) {
+    /**
+     * 将高分文章添加到特别组中。
+     *
+     * @param jedis     客户端
+     * @param articleId 文章ID
+     * @param toAdd     待加入的组
+     */
+    public void addGroups(Jedis jedis, String articleId, String[] toAdd) {
+        // 构建存储文章信息的键名。
         String article = "article:" + articleId;
         for (String group : toAdd) {
-            conn.sadd("group:" + group, article);
+            // 将文章添加到它所属的群组里面。
+            jedis.sadd("group:" + group, article);
         }
     }
 
-    public List<Map<String, String>> getGroupArticles(Jedis conn, String group, int page) {
-        return getGroupArticles(conn, group, page, "score:");
+    /**
+     * 获取某组内，根据分数排序后的文章列表。
+     *
+     * @param jedis 客户端
+     * @param group 组
+     * @param page  第几页
+     * @return 文章列表
+     */
+    public List<Map<String, String>> getGroupArticles(Jedis jedis, String group, int page) {
+        return getGroupArticles(jedis, group, page, "score:");
     }
 
-    public List<Map<String, String>> getGroupArticles(Jedis conn, String group, int page, String order) {
+    /**
+     * 获取某组内，经过排序后的文章列表。
+     *
+     * @param jedis 客户端
+     * @param group 组
+     * @param page  第几页
+     * @param order 排序属性
+     * @return 文章列表
+     */
+    public List<Map<String, String>> getGroupArticles(Jedis jedis, String group, int page, String order) {
+        // 为每个群组的每种排列顺序都创建一个键。
         String key = order + group;
-        if (!conn.exists(key)) {
+        // 检查是否有已缓存的排序结果，如果没有的话就现在进行排序。
+        if (!jedis.exists(key)) {
+            // 根据评分或者发布时间，对群组文章进行排序。
             ZParams params = new ZParams().aggregate(ZParams.Aggregate.MAX);
-            conn.zinterstore(key, params, "group:" + group, order);
-            conn.expire(key, 60);
+            jedis.zinterstore(key, params, "group:" + group, order);
+
+            // 让Redis在60秒钟之后自动删除这个有序集合。
+            jedis.expire(key, 60);
         }
-        return getArticles(conn, page, key);
+
+        // 调用之前定义的get_articles()函数来进行分页并获取文章数据。
+        return getArticles(jedis, page, key);
     }
 
     private void printArticles(List<Map<String, String>> articles) {
