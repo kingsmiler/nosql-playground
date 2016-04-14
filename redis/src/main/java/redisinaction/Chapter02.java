@@ -9,13 +9,11 @@ import java.net.URL;
 import java.util.*;
 
 public class Chapter02 {
-    public static final void main(String[] args)
-            throws InterruptedException {
+    public static final void main(String[] args) throws InterruptedException {
         new Chapter02().run();
     }
 
-    public void run()
-            throws InterruptedException {
+    public void run() throws InterruptedException {
         Jedis conn = new Jedis("localhost");
         conn.select(15);
 
@@ -25,8 +23,7 @@ public class Chapter02 {
         testCacheRequest(conn);
     }
 
-    public void testLoginCookies(Jedis conn)
-            throws InterruptedException {
+    public void testLoginCookies(Jedis conn) throws InterruptedException {
         System.out.println("\n----- testLoginCookies -----");
         String token = UUID.randomUUID().toString();
 
