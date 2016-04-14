@@ -20,8 +20,9 @@ public class Chapter01 {
         jedis.select(15);
         jedis.flushDB();
 
+        // 发表文章1
         String articleId = postArticle(jedis,
-                "username",
+                "user1",
                 "A title",
                 "http://www.google.com");
 
@@ -34,22 +35,39 @@ public class Chapter01 {
 
         System.out.println();
 
+        // 发表文章2
+        postArticle(jedis,
+                "user2",
+                "user2 title",
+                "http://www.google2.com");
+
+        // 发表文章3
+        postArticle(jedis,
+                "user3",
+                "user3 title",
+                "http://www.google3.com");
+
+        // 给文章1投票
         articleVote(jedis, "other_user", "article:" + articleId);
         String votes = jedis.hget("article:" + articleId, "votes");
         System.out.println("We voted for the article, it now has votes: " + votes);
         assert Integer.parseInt(votes) > 1;
 
+        // 根据分数排序输出
         System.out.println("The currently highest-scoring articles are:");
         List<Map<String, String>> articles = getArticles(jedis, 1);
         printArticles(articles);
         assert articles.size() >= 1;
 
+        // 将文章1加入新组
         addGroups(jedis, articleId, new String[]{"new-group"});
         System.out.println("We added the article to a new group, other articles include:");
         articles = getGroupArticles(jedis, "new-group", 1);
         printArticles(articles);
         assert articles.size() >= 1;
     }
+
+
 
     /**
      * 发表文章。
