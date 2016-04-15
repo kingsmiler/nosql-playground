@@ -1,6 +1,7 @@
 package redisinaction;
 
 import com.google.gson.Gson;
+import org.xman.nosql.RedisUtil;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Tuple;
 
@@ -14,7 +15,7 @@ public class Chapter02 {
     }
 
     public void run() throws InterruptedException {
-        Jedis conn = new Jedis("localhost");
+        Jedis conn = RedisUtil.getRedisClient();
         conn.select(15);
 
         testLoginCookies(conn);
