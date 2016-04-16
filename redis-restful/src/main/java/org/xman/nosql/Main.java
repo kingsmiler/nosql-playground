@@ -20,7 +20,8 @@ public class Main {
         Undertow.Builder builder = Undertow.builder().addHttpsListener(port, host, sslContext);
 
         server = new UndertowJaxrsServer().start(builder);
-        server.deploy(RestApplication.class, "/rest");
+
+        server.deploy(RestApplication.class, "/api");
     }
 
 }
