@@ -1,5 +1,7 @@
 package org.xman.nosql.sort;
 
+import org.junit.Test;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -22,13 +24,38 @@ public class DicTester {
         list.add("西海");
         list.add("中华");
 
-        //运用Collections的sort（）方法对其进行排序 sort（）方法需要传 连个参数，
-        // 一个是需要进行排序的Collection 另一个是一个Comparator 。
+        Collections.sort(list);
+        list.forEach(System.out::println);
+
+        System.out.println("=========");
 
         Collections.sort(list, new SpellComparator());
         for (int i = 0; i < list.size(); i++) {
             System.out.println(list.get(i));
         }
+    }
+
+    @Test
+    public void test() {
+        String s1="abc";
+        String s2="abcd";
+        System.out.println("s1.compareTo(s2)"+s1.compareTo(s2));//前缀相同则比较长度，长度差-1
+        System.out.println("s1.compareTo(s2)"+s1.compareTo("abcdefgh"));//长度差-5
+        String s3="abc";
+        String s4="ae";
+        System.out.println("s3.compareTo(s4)"+s3.compareTo(s4));//只比较第一个不同的字符处b-e=-3
+        String s5="abcdeg";
+        String s6="acce";
+        System.out.println("s5.compareTo(s6)"+s5.compareTo(s6));//b-c=-1
+        String s7="abc";
+        String s8="abb";
+        System.out.println("s7.compareTo(s8)"+s7.compareTo(s8));//c-b=1
+        String s9="abc";
+        String s0="abaaaaaaaaaaaaa";
+        System.out.println("s9.compareTo(s0)"+s9.compareTo(s0));//c-a=2只比较第一个不同的字符处，与长度无关
+
+        String sa="奥";
+        System.out.println("奥.compareTo(中)"+sa.compareTo("中"));
     }
 }
 
