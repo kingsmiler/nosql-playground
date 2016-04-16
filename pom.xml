@@ -10,6 +10,7 @@
     <modules>
         <module>redis</module>
         <module>redis-restful</module>
+        <module>undertown</module>
     </modules>
     <packaging>pom</packaging>
 
