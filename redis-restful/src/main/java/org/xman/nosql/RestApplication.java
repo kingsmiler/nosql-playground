@@ -11,8 +11,9 @@ public class RestApplication extends javax.ws.rs.core.Application {
     @Override
     public Set<Class<?>> getClasses() {
 
-        HashSet<Class<?>> classes = new HashSet<Class<?>>();
+        HashSet<Class<?>> classes = new HashSet<>();
         classes.add(HelloResource.class);
+
         return classes;
     }
 }
