@@ -16,7 +16,7 @@ public class HelloWorldHttpsServer {
 
     public static void main(String[] args) throws Exception {
 
-        SSLContext sslContext = SSLContext.getInstance("TLS");
+        SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
         sslContext.init(getKeyManagers(), null, null);
 
         Undertow.builder().addHttpsListener(8443, "0.0.0.0", sslContext)
