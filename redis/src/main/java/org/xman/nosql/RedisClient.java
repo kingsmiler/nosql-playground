@@ -1,9 +1,8 @@
 package org.xman.nosql;
 
-import redis.clients.jedis.*;
-
-import java.util.ArrayList;
-import java.util.List;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.ShardedJedis;
+import redis.clients.jedis.SortingParams;
 
 
 public class RedisClient {
@@ -11,7 +10,7 @@ public class RedisClient {
     private Jedis jedis;//非切片池连接客户端
     private ShardedJedis sharedJedis;//切片池连接客户端
 
-    public RedisClient() {
+    RedisClient() {
         sharedJedis = RedisUtil.getShardedRedisClient();
         jedis = RedisUtil.getRedisClient();
     }
@@ -24,12 +23,12 @@ public class RedisClient {
         }
     }
 
-    public void close() {
+    void close() {
         jedis.close();
         sharedJedis.close();
     }
 
-    public void keyOperate() {
+    void keyOperate() {
         System.out.println("======================key==========================");
         // 清空数据
         System.out.println("清空库中所有数据：" + jedis.flushDB());
@@ -68,7 +67,7 @@ public class RedisClient {
          */
     }
 
-    public void stringOperate() {
+    void stringOperate() {
         System.out.println("======================String_1==========================");
         // 清空数据
         System.out.println("清空库中所有数据：" + jedis.flushDB());
@@ -143,7 +142,7 @@ public class RedisClient {
         System.out.println("获取key302对应值中的子串：" + sharedJedis.getrange("key302", 5, 7));
     }
 
-    public void listOperate() {
+    void listOperate() {
         System.out.println("======================list==========================");
         // 清空数据
         System.out.println("清空库中所有数据：" + jedis.flushDB());
@@ -204,7 +203,7 @@ public class RedisClient {
         System.out.println("获取下标为2的元素：" + sharedJedis.lindex("stringlists", 2) + "\n");
     }
 
-    public void setOperate() {
+    void setOperate() {
         System.out.println("======================set==========================");
         // 清空数据
         System.out.println("清空库中所有数据：" + jedis.flushDB());
@@ -248,7 +247,7 @@ public class RedisClient {
         System.out.println("sets1和sets2差集：" + jedis.sdiff("sets1", "sets2"));//差集：set1中有，set2中没有的元素
     }
 
-    public void sortedSetOperate() {
+    void sortedSetOperate() {
         System.out.println("======================zset==========================");
         // 清空数据
         System.out.println(jedis.flushDB());
@@ -277,7 +276,7 @@ public class RedisClient {
 
     }
 
-    public void hashOperate() {
+    void hashOperate() {
         System.out.println("======================hash==========================");
         //清空数据
         System.out.println(jedis.flushDB());
