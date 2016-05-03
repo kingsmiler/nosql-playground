@@ -9,12 +9,17 @@ import java.util.Set;
 
 public class LuaTest {
     private static Jedis jedis;
+    static String key = "pub_tl_u1234";
 
     @BeforeClass
     public static void init() {
         jedis = RedisUtil.getRedisClient();
         jedis.select(8);
         jedis.flushDB();
+
+        for(int i=0; i<100; i++) {
+            jedis.zadd(key, i, "mid" + i);
+        }
     }
 
     @Test
@@ -45,6 +50,18 @@ public class LuaTest {
 
         System.out.println(message);
         System.out.println();
+    }
+
+    @Test
+    public void testRangeGet() {
+        String lua =
+                "local index = redis.call(\"zrank\", \""+ key +"\", \"mid75\")\n" +
+                        "local data = redis.call(\"zrange\", \""+ key +"\", index+1, index+20)\n" +
+                        "return data";
+
+        Object message = jedis.eval(lua);
+
+        System.out.println(message);
     }
 
 }
