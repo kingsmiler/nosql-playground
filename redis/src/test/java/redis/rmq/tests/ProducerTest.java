@@ -23,11 +23,15 @@ public class ProducerTest extends Assert {
     @Test
     public void publishAndConsume() {
         Producer p = new Producer(RedisUtil.getRedisClient(), "foo");
-        Consumer c = new Consumer(RedisUtil.getRedisClient(), "a subscriber", "foo");
+        Consumer c1 = new Consumer(RedisUtil.getRedisClient(), "a subscriber", "foo");
+        Consumer c2 = new Consumer(RedisUtil.getRedisClient(), "a subscriber", "foo");
 
         p.publish("hello world!");
-        assertEquals("hello world!", c.consume());
+
+        System.out.println("c1.consume()=" + c1.consume());
+        System.out.println("c2.consume()=" + c2.consume());
     }
+
 
     @Test
     public void publishAndRead() {

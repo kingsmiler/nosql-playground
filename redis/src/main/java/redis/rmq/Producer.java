@@ -53,8 +53,9 @@ public class Producer {
             String msgKey = topic.cat("message").cat(lastMessageId).key();
             trans.set(msgKey, message);
             trans.set(topic.key(), lastMessageId.toString());
-            if (seconds > 0)
+            if (seconds > 0) {
                 trans.expire(msgKey, seconds);
+            }
             exec = trans.exec();
         } while (exec == null);
     }

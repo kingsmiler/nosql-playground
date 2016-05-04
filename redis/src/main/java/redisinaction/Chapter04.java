@@ -1,5 +1,6 @@
 package redisinaction;
 
+import org.xman.nosql.RedisUtil;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Transaction;
@@ -16,7 +17,7 @@ public class Chapter04 {
     }
 
     public void run() {
-        Jedis conn = new Jedis("localhost");
+        Jedis conn = RedisUtil.getRedisClient();
         conn.select(15);
 
         testListItem(conn, false);
@@ -202,6 +203,21 @@ public class Chapter04 {
 
     public void updateTokenPipeline(Jedis conn, String token, String user, String item) {
         long timestamp = System.currentTimeMillis() / 1000;
+
+        Transaction pipe = conn.multi();
+        pipe.hset("login:", token, user);
+        pipe.zadd("recent:", timestamp, token);
+        if (item != null) {
+            pipe.zadd("viewed:" + token, timestamp, item);
+            pipe.zremrangeByRank("viewed:" + token, 0, -26);
+            pipe.zincrby("viewed:", -1, item);
+        }
+        pipe.exec();
+    }
+
+    public void updateTokenPipelineOld(Jedis conn, String token, String user, String item) {
+        long timestamp = System.currentTimeMillis() / 1000;
+        // 使用 pipeline 会报没有multi的异常，需要使用事务的方式
         Pipeline pipe = conn.pipelined();
         pipe.hset("login:", token, user);
         pipe.zadd("recent:", timestamp, token);
