@@ -5,7 +5,7 @@ import redis.clients.jedis.ShardedJedis;
 /**
  * 主题的切片生产者。
  */
-public class ShardedProducer {
+public class Producer {
     /**
      * 分片客户端
      */
@@ -15,7 +15,7 @@ public class ShardedProducer {
      */
     private Topic topic;
 
-    public ShardedProducer(ShardedJedis jedis, Topic topic) {
+    Producer(ShardedJedis jedis, Topic topic) {
         this.jedis = jedis;
         this.topic = topic;
 

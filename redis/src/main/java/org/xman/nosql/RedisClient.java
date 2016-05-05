@@ -201,6 +201,8 @@ public class RedisClient {
         System.out.println("子串-第二个开始到结束：" + sharedJedis.lrange("stringlists", 1, -1));
         // 获取列表指定下标的值
         System.out.println("获取下标为2的元素：" + sharedJedis.lindex("stringlists", 2) + "\n");
+
+        jedis.brpoplpush("stringlists", "stringlists2", 0);
     }
 
     void setOperate() {

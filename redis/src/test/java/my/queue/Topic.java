@@ -10,14 +10,12 @@ public class Topic {
      */
     private String key;
     /**
-     * REDIS 弹出主键
+     * REDIS 弹出的列表的主键
      */
     private String popKey;
 
-    public Topic(String name, String key, String popKey) {
+    Topic(String name) {
         this.name = name;
-        this.key = key;
-        this.popKey = popKey;
 
         this.name = name;
         this.key = "redis:topic:" + name;
