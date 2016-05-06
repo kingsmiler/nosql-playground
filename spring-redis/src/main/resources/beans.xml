@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns="http://www.springframework.org/schema/beans"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean id="jedisPoolConfig" class="redis.clients.jedis.JedisPoolConfig">
+        <property name="maxTotal" value="32"/>
+        <property name="maxIdle" value="6"/>
+        <property name="maxWaitMillis" value="15000"/>
+        <property name="minEvictableIdleTimeMillis" value="300000"/>
+        <property name="numTestsPerEvictionRun" value="3"/>
+        <property name="timeBetweenEvictionRunsMillis" value="60000"/>
+        <property name="blockWhenExhausted" value="1"/>
+    </bean>
+
+    <bean id="jedisConnFactory"
+          class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory"
+          destroy-method="destroy">
+        <property name="poolConfig" ref="jedisPoolConfig"/>
+        <property name="hostName" value="192.168.1.9"/>
+        <property name="port" value="6379"/>
+        <property name="usePool" value="true"/>
+    </bean>
+
+    <!-- redis template definition -->
+    <bean id="redisTemplate"
+          class="org.springframework.data.redis.core.RedisTemplate">
+        <property name="connectionFactory" ref="jedisConnFactory"/>
+
+        <property name="keySerializer">
+            <bean class="org.springframework.data.redis.serializer.StringRedisSerializer"/>
+        </property>
+        <property name="valueSerializer">
+            <bean class="org.springframework.data.redis.serializer.StringRedisSerializer"/>
+        </property>
+    </bean>
+
+    <bean id="consumer" class="org.xman.nosql.Consumer" scope="prototype">
+        <property name="template" ref="redisTemplate"/>
+    </bean>
+
+</beans>
