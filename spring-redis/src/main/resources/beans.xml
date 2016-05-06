@@ -18,7 +18,7 @@
           class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory"
           destroy-method="destroy">
         <property name="poolConfig" ref="jedisPoolConfig"/>
-        <property name="hostName" value="192.168.1.9"/>
+        <property name="hostName" value="redishost"/>
         <property name="port" value="6379"/>
         <property name="usePool" value="true"/>
     </bean>

@@ -27,6 +27,11 @@ public class Consumer extends Thread {
                 System.out.println(message);
             } catch (Exception e) {
                 e.printStackTrace();
+
+                try {
+                    Thread.sleep(10000);
+                } catch (InterruptedException ignored) {
+                }
             }
         }
     }
